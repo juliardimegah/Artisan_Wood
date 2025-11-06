@@ -43,7 +43,7 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-    import { getAuth, signInWithEmailAndPassword, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 
     const firebaseConfig = typeof __firebase_config !== 'undefined' 
         ? JSON.parse(__firebase_config) 
@@ -51,15 +51,6 @@
 
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
-
-    if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-        signInWithCustomToken(auth, __initial_auth_token).catch(error => {
-            console.error("Custom token sign-in error:", error);
-            signInAnonymously(auth);
-        });
-    } else {
-        signInAnonymously(auth);
-    }
 
     const signinForm = document.getElementById('signin-form');
     const errorMessageDiv = document.getElementById('error-message');
@@ -73,7 +64,25 @@
 
         signInWithEmailAndPassword(auth, email, password)
             .then((userCredential) => {
-                window.location.href = 'index.php';
+                // After successful Firebase sign-in, get the token
+                return userCredential.user.getIdToken();
+            })
+            .then(token => {
+                // Send the token to the server for session creation
+                return fetch('server-login.php', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': 'Bearer ' + token
+                    }
+                });
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    window.location.href = 'index.php'; // Redirect on successful server login
+                } else {
+                    throw new Error(data.error || 'Server login failed');
+                }
             })
             .catch((error) => {
                 errorMessageDiv.textContent = 'Email atau password salah. Silakan coba lagi.';

@@ -1,4 +1,77 @@
-<?php include 'db_connect.php'; ?>
+<?php
+session_start();
+include 'db_connect.php';
+
+if (!isset($_SESSION['user_id'])) {
+    header("Location: login.php"); // Redirect to login if not logged in
+    exit;
+}
+$user_id = $_SESSION['user_id'];
+
+// Handle order placement
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['confirm_payment'])) {
+    $recipient_name = $_POST['name'];
+    $address = $_POST['address'];
+    $city = $_POST['city'];
+    $postal_code = $_POST['postal_code'];
+    $phone_number = $_POST['phone'];
+    $courier = $_POST['shipping_method'];
+
+    // Save shipping address (or update if exists)
+    $stmt_addr = $conn->prepare("INSERT INTO shipping_address (user_id, recipient_name, address, city, postal_code, phone_number) VALUES (?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE recipient_name=VALUES(recipient_name), address=VALUES(address), city=VALUES(city), postal_code=VALUES(postal_code), phone_number=VALUES(phone_number)");
+    $stmt_addr->bind_param("isssss", $user_id, $recipient_name, $address, $city, $postal_code, $phone_number);
+    $stmt_addr->execute();
+
+    // Create a new order
+    $total_amount = $_POST['total_amount']; // Should be recalculated for security
+    $delivery_est = "Est. delivery : " . date('M d', strtotime('+3 days')) . " - " . date('M d', strtotime('+6 days'));
+
+    $stmt_order = $conn->prepare("INSERT INTO orders (user_id, total_amount, status, delivery_est, courier) VALUES (?, ?, 'Belum Dibayar', ?, ?)");
+    $stmt_order->bind_param("idss", $user_id, $total_amount, $delivery_est, $courier);
+    $stmt_order->execute();
+    $order_id = $conn->insert_id;
+
+    // Move items from cart to order_items
+    $cart_items_query = $conn->prepare("SELECT product_id, quantity FROM cart WHERE user_id = ?");
+    $cart_items_query->bind_param("i", $user_id);
+    $cart_items_query->execute();
+    $cart_items = $cart_items_query->get_result();
+
+    $stmt_oi = $conn->prepare("INSERT INTO order_items (order_id, product_id, quantity, price) VALUES (?, ?, ?, ?)");
+    $stmt_prod_price = $conn->prepare("SELECT price FROM products WHERE id = ?");
+
+    while ($item = $cart_items->fetch_assoc()) {
+        $stmt_prod_price->bind_param("i", $item['product_id']);
+        $stmt_prod_price->execute();
+        $product = $stmt_prod_price->get_result()->fetch_assoc();
+        $stmt_oi->bind_param("iiid", $order_id, $item['product_id'], $item['quantity'], $product['price']);
+        $stmt_oi->execute();
+    }
+
+    // Clear the cart
+    $stmt_clear_cart = $conn->prepare("DELETE FROM cart WHERE user_id = ?");
+    $stmt_clear_cart->bind_param("i", $user_id);
+    $stmt_clear_cart->execute();
+
+    // Redirect to a confirmation page
+    header("Location: order_confirmation.php?order_id=" . $order_id);
+    exit;
+}
+
+// Fetch user's cart and address
+$cart_query = $conn->prepare("SELECT p.name, p.price, p.image, c.quantity FROM cart c JOIN products p ON c.product_id = p.id WHERE c.user_id = ?");
+$cart_query->bind_param("i", $user_id);
+$cart_query->execute();
+$cart_items = $cart_query->get_result();
+
+$addr_query = $conn->prepare("SELECT * FROM shipping_address WHERE user_id = ?");
+$addr_query->bind_param("i", $user_id);
+$addr_query->execute();
+$shipping_address = $addr_query->get_result()->fetch_assoc();
+
+$subtotal = 0;
+$total_items = 0;
+?>
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -15,79 +88,72 @@
 
 <main class="container">
     <h1>Checkout</h1>
-    <div class="checkout-layout">
+    <form class="checkout-layout" method="POST">
         <div class="checkout-details">
-
-            <!-- Payment & Shipping Section -->
             <div class="payment-shipping">
                 <div class="payment-method">
                     <h2>Pay with</h2>
-                    <label><input type="radio" name="payment"> <i class="fas fa-money-bill-wave"></i> COD</label>
-                    <label><input type="radio" name="payment"> <i class="fas fa-university"></i> Bank account</label>
-                    <label><input type="radio" name="payment"> <i class="fas fa-wallet"></i> E-wallet</label>
+                    <label><input type="radio" name="payment_method" value="COD" required> <i class="fas fa-money-bill-wave"></i> COD</label>
+                    <label><input type="radio" name="payment_method" value="Bank account"> <i class="fas fa-university"></i> Bank account</label>
+                    <label><input type="radio" name="payment_method" value="E-wallet"> <i class="fas fa-wallet"></i> E-wallet</label>
                 </div>
-
                 <div class="shipping-method">
                     <h2>Ship with</h2>
-                    <label><input type="radio" name="shipping"> Regular</label>
-                    <label><input type="radio" name="shipping"> Instan</label>
-                    <label><input type="radio" name="shipping"> Same day</label>
+                    <label><input type="radio" name="shipping_method" value="Regular" required> Regular</label>
+                    <label><input type="radio" name="shipping_method" value="Instan"> Instan</label>
+                    <label><input type="radio" name="shipping_method" value="Same day"> Same day</label>
                 </div>
             </div>
-
             <hr>
-
-            <!-- Review Order & Address -->
             <div class="review-order-ship-to">
                 <div class="review-order">
                     <h2>Review order</h2>
+                     <?php while($item = $cart_items->fetch_assoc()):
+                        $subtotal += $item['price'] * $item['quantity'];
+                        $total_items += $item['quantity'];
+                    ?>
                     <div class="order-item">
-                        <img src="https://placehold.co/100x100/d3c1ae/8B4513?text=Item" alt="Product">
+                        <img src="<?= htmlspecialchars($item['image']) ?>" alt="<?= htmlspecialchars($item['name']) ?>">
                         <div class="item-info">
-                            <p><strong>Two-in-One Wood powder<br>Phone holder and pen case</strong></p>
-                            <p>id0990</p>
-                            <p><strong>Rp15.000</strong></p>
-                            <div class="quantity">QTY 1</div>
-                            <p class="delivery-info">
-                                Est. delivery : Jan 10 - Jan 13<br>
-                                Jnt Express<br>
-                                Shipping : Rp7.000
-                            </p>
+                            <p><strong><?= htmlspecialchars($item['name']) ?></strong></p>
+                            <p><strong>Rp<?= number_format($item['price'], 0, ',', '.') ?></strong></p>
+                            <div class="quantity">QTY <?= $item['quantity'] ?></div>
                         </div>
                     </div>
+                    <?php endwhile; $cart_items->data_seek(0); ?>
                 </div>
-
                 <div class="ship-to">
                     <h2>Ship to</h2>
-                    <form class="address-form">
-                        <input type="text" placeholder="Name">
-                        <input type="text" placeholder="Street address">
-                        <input type="text" placeholder="City">
-                        <input type="text" placeholder="State/Province/Region">
-                        <input type="text" placeholder="ZIP code">
-                        <input type="text" placeholder="Phone number">
-                        <button type="button" class="btn-add">Add</button>
-                    </form>
+                    <input type="text" name="name" placeholder="Name" value="<?= htmlspecialchars($shipping_address['recipient_name'] ?? '') ?>" required>
+                    <input type="text" name="address" placeholder="Street address" value="<?= htmlspecialchars($shipping_address['address'] ?? '') ?>" required>
+                    <input type="text" name="city" placeholder="City" value="<?= htmlspecialchars($shipping_address['city'] ?? '') ?>" required>
+                    <input type="text" name="postal_code" placeholder="ZIP code" value="<?= htmlspecialchars($shipping_address['postal_code'] ?? '') ?>" required>
+                    <input type="text" name="phone" placeholder="Phone number" value="<?= htmlspecialchars($shipping_address['phone_number'] ?? '') ?>" required>
                 </div>
             </div>
         </div>
 
-        <!-- Order Summary -->
+        <?php
+        $shipping_cost = ($subtotal > 0) ? 7000 : 0;
+        $admin_fee = ($subtotal > 0) ? 2500 : 0;
+        $order_total = $subtotal + $shipping_cost + $admin_fee;
+        ?>
         <div class="order-summary">
             <h2>Order Summary</h2>
+            <input type="hidden" name="total_amount" value="<?= $order_total ?>">
             <ul>
-                <li><span>Item(1)</span><span>Rp15.000</span></li>
-                <li><span>Shipping</span><span>Rp7.000</span></li>
-                <li><span>Admin fee</span><span>Rp2.500</span></li>
+                <li><span>Item(<?= $total_items ?>)</span><span>Rp<?= number_format($subtotal, 0, ',', '.') ?></span></li>
+                <li><span>Shipping</span><span>Rp<?= number_format($shipping_cost, 0, ',', '.') ?></span></li>
+                <li><span>Admin fee</span><span>Rp<?= number_format($admin_fee, 0, ',', '.') ?></span></li>
             </ul>
             <div class="total">
                 <span>Order Total</span>
-                <span>Rp24.500</span>
+                <span>Rp<?= number_format($order_total, 0, ',', '.') ?></span>
             </div>
             <p class="terms">With this purchase you agree to the terms and conditions.</p>
-            <button class="btn-confirm">Confirm and pay</button>
+            <button type="submit" name="confirm_payment" class="btn-confirm <?= ($total_items > 0) ? '' : 'disabled' ?>">Confirm and pay</button>
         </div>
-    </div>
+    </form>
 </main>
 
 <?php include 'footer.php'; ?>

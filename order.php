@@ -1,4 +1,17 @@
-<?php include 'db_connect.php'; ?>
+<?php
+session_start();
+include 'db_connect.php';
+
+// If the user is not logged in, redirect to the login page
+if (!isset($_SESSION['user_id'])) {
+    header('Location: login.php');
+    exit;
+}
+
+$user_id = $_SESSION['user_id'];
+$username = $_SESSION['username'] ?? 'User';
+
+?>
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -20,7 +33,7 @@
         <aside class="sidebar">
             <div class="user-info">
                 <i class="fas fa-user-circle"></i>
-                <span>Nama User</span>
+                <span><?= htmlspecialchars($username) ?></span>
             </div>
             <nav>
                 <ul>
@@ -43,32 +56,64 @@
 
             <div class="order-list">
                 <?php
-                // Example of fetching data from local MySQL database
-                $query = "SELECT * FROM orders ORDER BY created_at DESC";
-                $result = $conn->query($query);
+                // Fetch orders and their items for the logged-in user
+                $stmt = $conn->prepare("
+                    SELECT 
+                        o.id AS order_id, o.created_at, o.status, o.total_amount,
+                        p.name AS product_name, p.image AS product_image, 
+                        oi.quantity, oi.price
+                    FROM orders AS o
+                    JOIN order_items AS oi ON o.id = oi.order_id
+                    JOIN products AS p ON oi.product_id = p.id
+                    WHERE o.user_id = ?
+                    ORDER BY o.created_at DESC
+                ");
+                $stmt->bind_param("i", $user_id);
+                $stmt->execute();
+                $result = $stmt->get_result();
 
-                if ($result && $result->num_rows > 0) {
+                if ($result->num_rows > 0) {
+                    // Group items by order ID
+                    $orders = [];
                     while ($row = $result->fetch_assoc()) {
-                        echo '
-                        <div class="order-item">
-                            <div class="item-main-info">
-                                <span class="item-qty">'.$row['quantity'].'x</span>
-                                <img src="'.$row['image'].'" alt="Product">
-                                <div class="item-details">
-                                    <p><strong>'.$row['product_name'].'</strong></p>
-                                    <p class="delivery-details">Delivery</p>
-                                    <p class="delivery-details">Est. delivery : '.$row['delivery_est'].'</p>
-                                    <p class="delivery-details">'.$row['courier'].'</p>
+                        $orders[$row['order_id']]['details'] = [
+                            'created_at' => $row['created_at'],
+                            'status' => $row['status'],
+                            'total_amount' => $row['total_amount']
+                        ];
+                        $orders[$row['order_id']]['items'][] = [
+                            'product_name' => $row['product_name'],
+                            'product_image' => $row['product_image'],
+                            'quantity' => $row['quantity'],
+                            'price' => $row['price']
+                        ];
+                    }
+
+                    foreach ($orders as $order_id => $order) {
+                        echo '<div class="order-group">';
+                        echo '<h4>Order ID: ' . $order_id . ' | Status: ' . htmlspecialchars($order['details']['status']) . '</h4>';
+                        foreach ($order['items'] as $item) {
+                            echo '
+                            <div class="order-item">
+                                <div class="item-main-info">
+                                    <span class="item-qty">'. $item['quantity'] .'x</span>
+                                    <img src="'. htmlspecialchars($item['product_image']) .'" alt="Product">
+                                    <div class="item-details">
+                                        <p><strong>'. htmlspecialchars($item['product_name']) .'</strong></p>
+                                    </div>
                                 </div>
-                            </div>
-                            <div class="item-price">
-                                Rp'.number_format($row['price'], 0, ',', '.').'
-                            </div>
-                        </div>';
+                                <div class="item-price">
+                                    Rp'. number_format($item['price'] * $item['quantity'], 0, ',', '.') .'
+                                </div>
+                            </div>';
+                        }
+                        echo '<div class="order-total"><strong>Total: Rp'. number_format($order['details']['total_amount'], 0, ',', '.') .'</strong></div>';
+                        echo '</div>';
                     }
                 } else {
                     echo '<p class="no-orders">Belum ada pesanan.</p>';
                 }
+                $stmt->close();
                 ?>
             </div>
         </section>

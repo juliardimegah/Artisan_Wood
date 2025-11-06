@@ -21,23 +21,13 @@
             <a href="#" class="btn-shop">SHOP NOW</a>
         </div>
         <div class="hero-image">
-            <img src="assets/Gambar-6.png" alt="Furniture collection">
+            <img src="assets/images/Gambar-6.png" alt="Furniture collection">
         </div>
     </section>
 
     <section class="trending container">
         <h2>Trending Today</h2>
         <div class="product-grid">
-            <!-- Custom Product (Static) -->
-            <div class="product-card">
-                <img src="assets/Gambar-1.png" alt="Custom Product">
-                <div class="product-card-info">
-                    <h3>Custom</h3>
-                    <p class="price">Rp???</p>
-                    <a href="custom.php" class="btn-action">Chat admin</a>
-                </div>
-            </div>
-
             <!-- Dynamic Products -->
             <?php
             $sql = "SELECT * FROM products";
@@ -45,11 +35,19 @@
             if ($result->num_rows > 0) {
                 while ($row = $result->fetch_assoc()) {
                     echo '<div class="product-card">';
+                    echo '<a href="product.php?id=' . $row['id'] . '">';
                     echo '<img src="' . $row['image'] . '" alt="' . htmlspecialchars($row['name']) . '">';
+                    echo '</a>';
                     echo '<div class="product-card-info">';
+                    echo '<a href="product.php?id=' . $row['id'] . '">';
                     echo '<h3>' . htmlspecialchars($row['name']) . '</h3>';
+                    echo '</a>';
                     echo '<p class="price">Rp' . number_format($row['price'], 0, ',', '.') . '</p>';
-                    echo '<button class="btn-action">add to cart</button>';
+                    echo '<form action="cart.php" method="POST">';
+                    echo '<input type="hidden" name="product_id" value="'. $row['id'] .'">';
+                    echo '<input type="hidden" name="quantity" value="1">';
+                    echo '<button type="submit" class="btn-action">add to cart</button>';
+                    echo '</form>';
                     echo '</div></div>';
                 }
             } else {
