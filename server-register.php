@@ -18,7 +18,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         exit;
     }
 
-    $username = $firstName . ' ' . $lastName;
+    $name = $firstName . ' ' . $lastName;
 
     $stmt = $conn->prepare("SELECT id FROM users WHERE email = ?");
     $stmt->bind_param("s", $email);
@@ -31,13 +31,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     } else {
         $hashed_password = password_hash($password, PASSWORD_BCRYPT);
 
-        $stmt = $conn->prepare("INSERT INTO users (username, email, password) VALUES (?, ?, ?)");
-        $stmt->bind_param("sss", $username, $email, $hashed_password);
+        $stmt = $conn->prepare("INSERT INTO users (name, email, password) VALUES (?, ?, ?)");
+        $stmt->bind_param("sss", $name, $email, $hashed_password);
         
         if ($stmt->execute()) {
             $new_user_id = $conn->insert_id;
             $_SESSION['user_id'] = $new_user_id;
-            $_SESSION['username'] = $username;
+            $_SESSION['name'] = $name;
             header("Location: index.php");
             exit;
         } else {

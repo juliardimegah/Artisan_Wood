@@ -1,4 +1,5 @@
-<?php include 'db_connect.php'; ?>
+    <?php include 'db_connect.php';
+include 'header.php'; ?>
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -11,8 +12,6 @@
 </head>
 <body>  
 
-<?php include 'header.php'; ?>
-
 <main class="container">
     <h1>Customer Service</h1>
 
@@ -20,7 +19,7 @@
         <aside class="sidebar">
             <div class="user-info">
                 <i class="fas fa-user-circle"></i>
-                <span>Nama User</span>
+                <span><?= isset($_SESSION['name']) ? htmlspecialchars($_SESSION['name']) : 'Guest'; ?></span>
             </div>
             <nav>
                 <ul>
@@ -36,8 +35,8 @@
 
             <form class="contact-form" method="POST" action="">
                 <div class="form-group">
-                    <label for="username">Username</label>
-                    <input type="text" id="username" name="username" placeholder="Username" required>
+                    <label for="name">Name</label>
+                    <input type="text" id="name" name="name" placeholder="Name" required>
                 </div>
 
                 <div class="form-group">
@@ -58,12 +57,12 @@
             <?php
             // Handle form submission (optional)
             if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-                $username = htmlspecialchars($_POST['username']);
+                $name = htmlspecialchars($_POST['name']);
                 $email = htmlspecialchars($_POST['email']);
                 $message = htmlspecialchars($_POST['message']);
 
-                $stmt = $conn->prepare("INSERT INTO customer_messages (username, email, message) VALUES (?, ?, ?)");
-                $stmt->bind_param("sss", $username, $email, $message);
+                $stmt = $conn->prepare("INSERT INTO customer_messages (name, email, message) VALUES (?, ?, ?)");
+                $stmt->bind_param("sss", $name, $email, $message);
                 if ($stmt->execute()) {
                     echo "<p class='success-message'>Thank you! Your message has been sent successfully.</p>";
                 } else {

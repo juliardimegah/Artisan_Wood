@@ -1,4 +1,4 @@
--- phpMyAdmin SQL Dump
+'''-- phpMyAdmin SQL Dump
 -- version 5.2.1
 -- https://www.phpmyadmin.net/
 --
@@ -29,7 +29,7 @@ SET time_zone = "+00:00";
 
 CREATE TABLE `admin` (
   `id` int(11) NOT NULL,
-  `username` varchar(50) NOT NULL,
+  `name` varchar(50) NOT NULL,
   `password` varchar(255) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
@@ -37,7 +37,7 @@ CREATE TABLE `admin` (
 -- Dumping data for table `admin`
 --
 
-INSERT INTO `admin` (`id`, `username`, `password`) VALUES
+INSERT INTO `admin` (`id`, `name`, `password`) VALUES
 (1, 'admin', '240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9');
 
 -- --------------------------------------------------------
@@ -62,7 +62,7 @@ CREATE TABLE `cart` (
 
 CREATE TABLE `customer_messages` (
   `id` int(11) NOT NULL,
-  `username` varchar(100) DEFAULT NULL,
+  `name` varchar(100) DEFAULT NULL,
   `email` varchar(100) DEFAULT NULL,
   `message` text DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
@@ -72,7 +72,7 @@ CREATE TABLE `customer_messages` (
 -- Dumping data for table `customer_messages`
 --
 
-INSERT INTO `customer_messages` (`id`, `username`, `email`, `message`, `created_at`) VALUES
+INSERT INTO `customer_messages` (`id`, `name`, `email`, `message`, `created_at`) VALUES
 (1, 'Andi', 'andi@mail.com', 'Apakah ada promo akhir tahun?', '2025-11-03 09:32:21');
 
 -- --------------------------------------------------------
@@ -169,7 +169,7 @@ CREATE TABLE `shipping_address` (
 
 CREATE TABLE `users` (
   `id` int(11) NOT NULL,
-  `username` varchar(100) NOT NULL,
+  `name` varchar(100) NOT NULL,
   `email` varchar(100) NOT NULL,
   `password` varchar(255) NOT NULL,
   `address` text DEFAULT NULL,
@@ -185,7 +185,7 @@ CREATE TABLE `users` (
 --
 ALTER TABLE `admin`
   ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `username` (`username`);
+  ADD UNIQUE KEY `name` (`name`);
 
 --
 -- Indexes for table `cart`
@@ -341,3 +341,4 @@ COMMIT;
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+''
