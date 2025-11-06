@@ -32,9 +32,9 @@ $product = $result->fetch_assoc();
         <div class="product-layout">
             <div class="product-gallery">
                 <div class="main-image">
+                    <!-- PERBAIKAN: Langsung gunakan URL dari database (ImgBB) -->
                     <img src="<?= htmlspecialchars($product['image']) ?>" alt="<?= htmlspecialchars($product['name']) ?>">
                 </div>
-                <!-- Note: Thumbnails are placeholders using the same image. -->
                 <div class="thumbnail-images">
                     <img src="<?= htmlspecialchars($product['image']) ?>" alt="Product thumbnail">
                     <img src="<?= htmlspecialchars($product['image']) ?>" alt="Product thumbnail">
@@ -87,13 +87,12 @@ document.addEventListener('DOMContentLoaded', function() {
     
     if (buyNowBtn) {
         buyNowBtn.addEventListener('click', function(e) {
-            e.preventDefault(); // Prevent default form submission
-            // Set a hidden input to signify "buy now" action
+            e.preventDefault();
             const buyNowInput = document.getElementById('buy-now');
             if (buyNowInput) {
                 buyNowInput.value = '1';
             }
-            form.submit(); // Submit the form
+            form.submit();
         });
     }
 });
