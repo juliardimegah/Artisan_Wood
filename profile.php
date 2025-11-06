@@ -96,12 +96,6 @@ include './header.php';
                     <button type="submit" class="btn-submit">Save Changes</button>
                 </div>
             </form>
-            
-            <!-- Tombol Logout ditambahkan di sini -->
-            <div class="logout-section" style="margin-top: 40px; border-top: 1px solid #eee; padding-top: 20px; text-align: right;">
-                 <a href="./logout.php" class="btn-logout" style="text-decoration: none; background-color: #d9534f; color: white; padding: 10px 20px; border-radius: 5px; font-weight: 500;"><i class="fas fa-sign-out-alt"></i> Logout</a>
-            </div>
-
         </section>
     </div>
 </main>
