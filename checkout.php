@@ -42,8 +42,8 @@ $total_items = 0;
                         $total_items += $item['quantity'];
                     ?>
                     <div class="order-item">
-                        <!-- PERBAIKAN: Langsung gunakan URL dari database (ImgBB) -->
-                        <img src="<?= htmlspecialchars($item['image']) ?>" alt="<?= htmlspecialchars($item['name']) ?>">
+                        <!-- PERBAIKAN: Ukuran gambar diatur langsung di sini -->
+                        <img src="<?= htmlspecialchars($item['image']) ?>" alt="<?= htmlspecialchars($item['name']) ?>" style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px;">
                         <div class="item-info">
                             <p><strong><?= htmlspecialchars($item['name']) ?></strong></p>
                             <p><strong>Rp<?= number_format($item['price'], 0, ',', '.') ?></strong></p>
