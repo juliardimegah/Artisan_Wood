@@ -39,11 +39,13 @@ session_start();
         <input type="text" placeholder="Search what you need">
     </div>
     <div class="user-actions">
-        <?php if (isset($_SESSION['user_id'])) : ?>
+        <?php if (isset($_SESSION['user_id'])) : 
+            $firstName = explode(' ', htmlspecialchars($_SESSION['name']))[0];
+        ?>
             <div class="account">
                 <a href="#">
                     <i class="fas fa-user"></i>
-                    <span>Hello, <?= htmlspecialchars($_SESSION['name']); ?></span>
+                    <span>Hello, <?= $firstName; ?></span>
                 </a>
                 <div class="dropdown-content">
                     <a href="profile.php">Profile</a>

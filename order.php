@@ -9,7 +9,11 @@ if (!isset($_SESSION['user_id'])) {
 }
 
 $user_id = $_SESSION['user_id'];
-$username = $_SESSION['username'] ?? 'User';
+// Correctly get the user's name from the session
+$name = $_SESSION['name'] ?? 'User';
+
+// Get the current status from the query string, default to 'Semua'
+$status_filter = $_GET['status'] ?? 'Semua';
 
 ?>
 <!DOCTYPE html>
@@ -33,7 +37,7 @@ $username = $_SESSION['username'] ?? 'User';
         <aside class="sidebar">
             <div class="user-info">
                 <i class="fas fa-user-circle"></i>
-                <span><?= htmlspecialchars($username) ?></span>
+                <span><?= htmlspecialchars($name) ?></span>
             </div>
             <nav>
                 <ul>
@@ -46,29 +50,43 @@ $username = $_SESSION['username'] ?? 'User';
 
         <section class="content">
             <div class="order-tabs">
-                <a href="#" class="active">Semua</a>
-                <a href="#">Belum dibayar</a>
-                <a href="#">Sedang dikemas</a>
-                <a href="#">Dikirim</a>
-                <a href="#">Selesai</a>
-                <a href="#">Dibatalkan</a>
+                <a href="?status=Semua" class="<?= $status_filter == 'Semua' ? 'active' : '' ?>">Semua</a>
+                <a href="?status=Belum dibayar" class="<?= $status_filter == 'Belum dibayar' ? 'active' : '' ?>">Belum dibayar</a>
+                <a href="?status=Sedang dikemas" class="<?= $status_filter == 'Sedang dikemas' ? 'active' : '' ?>">Sedang dikemas</a>
+                <a href="?status=Dikirim" class="<?= $status_filter == 'Dikirim' ? 'active' : '' ?>">Dikirim</a>
+                <a href="?status=Selesai" class="<?= $status_filter == 'Selesai' ? 'active' : '' ?>">Selesai</a>
+                <a href="?status=Dibatalkan" class="<?= $status_filter == 'Dibatalkan' ? 'active' : '' ?>">Dibatalkan</a>
             </div>
 
             <div class="order-list">
                 <?php
-                // Fetch orders and their items for the logged-in user
-                $stmt = $conn->prepare("
+                // Base query
+                $sql = "
                     SELECT 
-                        o.id AS order_id, o.created_at, o.status, o.total_amount,
+                        o.id AS order_id, o.order_date, o.status, o.total_amount,
                         p.name AS product_name, p.image AS product_image, 
                         oi.quantity, oi.price
                     FROM orders AS o
                     JOIN order_items AS oi ON o.id = oi.order_id
                     JOIN products AS p ON oi.product_id = p.id
-                    WHERE o.user_id = ?
-                    ORDER BY o.created_at DESC
-                ");
-                $stmt->bind_param("i", $user_id);
+                    WHERE o.user_id = ?";
+
+                // Add status filter if not 'Semua'
+                if ($status_filter != 'Semua') {
+                    $sql .= " AND o.status = ?";
+                }
+                
+                $sql .= " ORDER BY o.order_date DESC";
+
+                $stmt = $conn->prepare($sql);
+
+                // Bind parameters
+                if ($status_filter != 'Semua') {
+                    $stmt->bind_param("is", $user_id, $status_filter);
+                } else {
+                    $stmt->bind_param("i", $user_id);
+                }
+
                 $stmt->execute();
                 $result = $stmt->get_result();
 
@@ -77,7 +95,7 @@ $username = $_SESSION['username'] ?? 'User';
                     $orders = [];
                     while ($row = $result->fetch_assoc()) {
                         $orders[$row['order_id']]['details'] = [
-                            'created_at' => $row['created_at'],
+                            'order_date' => $row['order_date'],
                             'status' => $row['status'],
                             'total_amount' => $row['total_amount']
                         ];
@@ -111,7 +129,7 @@ $username = $_SESSION['username'] ?? 'User';
                         echo '</div>';
                     }
                 } else {
-                    echo '<p class="no-orders">Belum ada pesanan.</p>';
+                    echo '<p class="no-orders">Belum ada pesanan dengan status ini.</p>';
                 }
                 $stmt->close();
                 ?>
