@@ -3,22 +3,42 @@ session_start();
 include '../db_connect.php';
 
 $error = '';
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $username = $_POST['username'];
-    // Anda harus menggunakan password_verify() dengan hash yang disimpan di DB.
-    // Untuk contoh ini, kita tetap gunakan SHA256, tapi ini tidak direkomendasikan untuk produksi.
-    $password = hash('sha256', $_POST['password']);
+    $password = $_POST['password'];
 
-    $stmt = $conn->prepare("SELECT * FROM admin WHERE username=? AND password=?");
-    $stmt->bind_param("ss", $username, $password);
+    // Ambil data admin dari database
+    $stmt = $conn->prepare("SELECT id, password FROM admin WHERE name = ?");
+    $stmt->bind_param("s", $username);
     $stmt->execute();
     $result = $stmt->get_result();
+    $admin = $result->fetch_assoc();
 
-    if ($result->num_rows > 0) {
-        $_SESSION['admin_logged_in'] = true;
-        $_SESSION['admin_username'] = $username;
-        header("Location: index.php");
-        exit;
+    if ($admin) {
+        $stored_hash = $admin['password'];
+        $is_legacy_hash = (strlen($stored_hash) == 64 && ctype_xdigit($stored_hash));
+
+        // Verifikasi password
+        if (password_verify($password, $stored_hash) || ($is_legacy_hash && hash_equals($stored_hash, hash('sha256', $password)))) {
+            
+            // Jika password cocok dan masih menggunakan hash lama (sha256),
+            // update ke hash yang lebih aman (bcrypt)
+            if ($is_legacy_hash && hash_equals($stored_hash, hash('sha256', $password))) {
+                $new_hash = password_hash($password, PASSWORD_DEFAULT);
+                $update_stmt = $conn->prepare("UPDATE admin SET password = ? WHERE id = ?");
+                $update_stmt->bind_param("si", $new_hash, $admin['id']);
+                $update_stmt->execute();
+            }
+
+            // Set session dan redirect ke halaman utama admin
+            $_SESSION['admin_logged_in'] = true;
+            $_SESSION['admin_username'] = $username;
+            header("Location: index.php");
+            exit;
+        } else {
+            $error = "Username atau password salah!";
+        }
     } else {
         $error = "Username atau password salah!";
     }
@@ -40,9 +60,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <h2><i class="fas fa-user-shield"></i> Admin Login</h2>
         <p>Welcome to the Artisan Wood CMS</p>
         
-        <?php if (!empty($error)): ?>
-            <div class="login-error"><?= $error ?></div>
-        <?php endif; ?>
+        <?php if (!empty($error)):
+            echo "<div class=\"login-error\">" . htmlspecialchars($error) . "</div>";
+        endif; ?>
         
         <form method="POST" action="login-admin.php">
             <div class="input-group">
