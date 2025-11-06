@@ -1,6 +1,7 @@
 <?php
 session_start();
 include 'db_connect.php';
+include 'midtrans-config.php'; 
 
 if (!isset($_SESSION['user_id'])) {
     header("Location: /signin.php"); 
@@ -18,11 +19,17 @@ $cart_items = $cart_query->get_result();
 
 $subtotal = 0;
 $total_items = 0;
+
+$order_id = 'ORDER-' . time(); 
 ?>
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <!-- ... (head content) ... -->
+    <script 
+        type="text/javascript"
+        src="https://app.sandbox.midtrans.com/snap/snap.js"
+        data-client-key="YOUR_CLIENT_KEY"
+    ></script>
 </head>
 <body>
 
@@ -42,7 +49,6 @@ $total_items = 0;
                         $total_items += $item['quantity'];
                     ?>
                     <div class="order-item">
-                        <!-- PERBAIKAN: Ukuran gambar diatur langsung di sini -->
                         <img src="<?= htmlspecialchars($item['image']) ?>" alt="<?= htmlspecialchars($item['name']) ?>" style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px;">
                         <div class="item-info">
                             <p><strong><?= htmlspecialchars($item['name']) ?></strong></p>
@@ -57,12 +63,45 @@ $total_items = 0;
         </div>
 
         <div class="order-summary">
-            <!-- ... (order summary content) ... -->
+            <button type="button" id="pay-button">Bayar dengan Midtrans</button>
         </div>
     </form>
 </main>
 
 <?php include 'footer.php'; ?>
+
+<script type="text/javascript">
+    document.getElementById('pay-button').onclick = function(){
+        // Token akan kita dapatkan dari server
+        fetch('/get_midtrans_token.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                order_id: "<?php echo $order_id; ?>",
+                gross_amount: <?php echo $subtotal; ?>
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            snap.pay(data.token, {
+                onSuccess: function(result){
+                    alert("Pembayaran berhasil!"); 
+                    console.log(result);
+                },
+                onPending: function(result){
+                    alert("Menunggu pembayaran!");
+                    console.log(result);
+                },
+                onError: function(result){
+                    alert("Pembayaran gagal!");
+                    console.log(result);
+                }
+            });
+        });
+    };
+</script>
 
 </body>
 </html>
