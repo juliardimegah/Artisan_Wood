@@ -11,7 +11,6 @@ $user_id = $_SESSION['user_id'];
 
 // Proses form saat pengguna menekan "Confirm and pay"
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['confirm_payment'])) {
-    // ... (logika pemrosesan order tetap sama)
     $recipient_name = $_POST['name'];
     $address = $_POST['address'];
     $city = $_POST['city'];
@@ -24,7 +23,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['confirm_payment'])) {
     $stmt_addr->bind_param("isssss", $user_id, $recipient_name, $address, $city, $postal_code, $phone_number);
     $stmt_addr->execute();
 
-    // ... (sisa logika order, tidak diubah)
     $total_amount = $_POST['total_amount'];
     $delivery_est = "Est. delivery : " . date('M d', strtotime('+3 days')) . " - " . date('M d', strtotime('+6 days'));
 
@@ -57,20 +55,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['confirm_payment'])) {
     exit;
 }
 
-// --- Logika Baru untuk Mengambil Alamat ---
-// 1. Coba ambil dari alamat pengiriman terakhir (shipping_address)
+// --- Logika untuk Mengambil Alamat ---
 $addr_query = $conn->prepare("SELECT recipient_name, address, city, postal_code, phone_number FROM shipping_address WHERE user_id = ?");
 $addr_query->bind_param("i", $user_id);
 $addr_query->execute();
 $address_data = $addr_query->get_result()->fetch_assoc();
 
-// 2. Jika tidak ada, ambil dari profil pengguna (users)
 if (!$address_data) {
     $user_query = $conn->prepare("SELECT name, address, city, postal_code, phone FROM users WHERE id = ?");
     $user_query->bind_param("i", $user_id);
     $user_query->execute();
     $user_data = $user_query->get_result()->fetch_assoc();
-    // Format data agar sesuai dengan variabel $address_data
     if ($user_data) {
         $address_data = [
             'recipient_name' => $user_data['name'],
@@ -99,7 +94,7 @@ $total_items = 0;
     <title>Checkout - Artisan Wood</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <link rel="stylesheet" href="/assets/css/style.css"> <!-- Path absolut -->
+    <link rel="stylesheet" href="/assets/css/style.css">
 </head>
 <body>
 
@@ -110,7 +105,18 @@ $total_items = 0;
     <form class="checkout-layout" method="POST">
         <div class="checkout-details">
             <div class="payment-shipping">
-                 <!-- ... (bagian metode pembayaran dan pengiriman tetap sama) ... -->
+                <div class="payment-method">
+                    <h2>Pay with</h2>
+                    <label><input type="radio" name="payment_method" value="COD" required> <i class="fas fa-money-bill-wave"></i> COD</label>
+                    <label><input type="radio" name="payment_method" value="Bank account"> <i class="fas fa-university"></i> Bank account</label>
+                    <label><input type="radio" name="payment_method" value="E-wallet"> <i class="fas fa-wallet"></i> E-wallet</label>
+                </div>
+                <div class="shipping-method">
+                    <h2>Ship with</h2>
+                    <label><input type="radio" name="shipping_method" value="Regular" required> Regular</label>
+                    <label><input type="radio" name="shipping_method" value="Instan"> Instan</label>
+                    <label><input type="radio" name="shipping_method" value="Same day"> Same day</label>
+                </div>
             </div>
             <hr>
             <div class="review-order-ship-to">
@@ -121,7 +127,6 @@ $total_items = 0;
                         $total_items += $item['quantity'];
                     ?>
                     <div class="order-item">
-                        <!-- Gunakan path absolut untuk gambar -->
                         <img src="<?= '/' . ltrim(htmlspecialchars($item['image']), '/') ?>" alt="<?= htmlspecialchars($item['name']) ?>">
                         <div class="item-info">
                             <p><strong><?= htmlspecialchars($item['name']) ?></strong></p>
@@ -133,7 +138,6 @@ $total_items = 0;
                 </div>
                 <div class="ship-to">
                     <h2>Ship to</h2>
-                    <!-- Form diisi dengan data alamat yang sudah diambil -->
                     <input type="text" name="name" placeholder="Name" value="<?= htmlspecialchars($address_data['recipient_name'] ?? '') ?>" required>
                     <input type="text" name="address" placeholder="Street address" value="<?= htmlspecialchars($address_data['address'] ?? '') ?>" required>
                     <input type="text" name="city" placeholder="City" value="<?= htmlspecialchars($address_data['city'] ?? '') ?>" required>
@@ -149,7 +153,19 @@ $total_items = 0;
         $order_total = $subtotal + $shipping_cost + $admin_fee;
         ?>
         <div class="order-summary">
-             <!-- ... (bagian ringkasan order tetap sama) ... -->
+            <h2>Order Summary</h2>
+            <input type="hidden" name="total_amount" value="<?= $order_total ?>">
+            <ul>
+                <li><span>Item(<?= $total_items ?>)</span><span>Rp<?= number_format($subtotal, 0, ',', '.') ?></span></li>
+                <li><span>Shipping</span><span>Rp<?= number_format($shipping_cost, 0, ',', '.') ?></span></li>
+                <li><span>Admin fee</span><span>Rp<?= number_format($admin_fee, 0, ',', '.') ?></span></li>
+            </ul>
+            <div class="total">
+                <span>Order Total</span>
+                <span>Rp<?= number_format($order_total, 0, ',', '.') ?></span>
+            </div>
+            <p class="terms">With this purchase you agree to the terms and conditions.</p>
+            <button type="submit" name="confirm_payment" class="btn-confirm <?= ($total_items > 0) ? '' : 'disabled' ?>">Confirm and pay</button>
         </div>
     </form>
 </main>
