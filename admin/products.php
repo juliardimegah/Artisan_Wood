@@ -23,16 +23,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_product'])) {
     // Upload gambar
     $image = "";
     if (!empty($_FILES['image']['name'])) {
-    $uploadDir = "assets/products/";
+    $uploadDir = "../assets/products/";
     if (!is_dir($uploadDir)) mkdir($uploadDir, 0777, true);
 
-    $filename = basename($_FILES['image']['name']);
+    // Biar aman, ubah nama file jadi unik
+    $ext = pathinfo($_FILES['image']['name'], PATHINFO_EXTENSION);
+    $filename = 'product_' . time() . '_' . uniqid() . '.' . $ext;
     $targetFile = $uploadDir . $filename;
 
-    // Simpan path relatif (untuk database)
-    $image = "assets/products/" . $filename;
+    // Simpan path absolut dari root (bukan relatif admin)
+    $image = "/artisan_wood/assets/products/" . $filename;
 
     move_uploaded_file($_FILES['image']['tmp_name'], $targetFile);
+
+
 }
 
 
@@ -69,13 +73,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_product'])) {
 
     $image = $_POST['old_image'];
     if (!empty($_FILES['image']['name'])) {
-    $uploadDir = "assets/products/";
+    $uploadDir = "../assets/products/";
     if (!is_dir($uploadDir)) mkdir($uploadDir, 0777, true);
 
     $filename = basename($_FILES['image']['name']);
     $targetFile = $uploadDir . $filename;
 
-    $image = "assets/products/" . $filename;
+    $image = "/artisan_wood/assets/products/" . $filename;
 
     move_uploaded_file($_FILES['image']['tmp_name'], $targetFile);
 }
@@ -166,7 +170,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_product'])) {
             <label for="image">Product Image:</label>
             <input type="file" name="image" accept="image/*">
             <?php if (!empty($editData['image'])): ?>
-                <p>Current: <img src="../<?= htmlspecialchars($editData['image']) ?>" height="60"></p>
+                <p>Current: <img src="../assets/products/<?= htmlspecialchars($editData['image']) ?>" height="60"></p>
             <?php endif; ?>
 
             <button type="submit" name="update_product">Update Product</button>
@@ -195,7 +199,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_product'])) {
             <td><?= $row['id'] ?></td>
             <td>
                 <?php if (!empty($row['image'])): ?>
-                    <img src="../<?= htmlspecialchars($row['image']) ?>" alt="" height="50">
+                    <img src="../assets/products/<?= htmlspecialchars($row['image']) ?>" alt="" height="50">
                 <?php else: ?>
                     <em>No image</em>
                 <?php endif; ?>

@@ -20,12 +20,12 @@
         <p class="subtitle">Don't have an account yet? <a href="create-account.php">Create account</a></p>
         <div id="error-message" class="error-message" style="display: none;"></div>
         
-        <form id="signin-form">
+        <form id="signin-form" action="server-login.php" method="POST">
             <div class="form-group">
-                <input type="email" id="email" placeholder="Email" required>
+                <input type="email" id="email" name="email" placeholder="Email" required>
             </div>
             <div class="form-group">
-                <input type="password" id="password" placeholder="Password" required>
+                <input type="password" id="password" name="password" placeholder="Password" required>
             </div>
             <button type="submit" class="btn btn-primary">Continue</button>
         </form>
@@ -41,55 +41,14 @@
     </div>
 </main>
 
-<script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-    import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-
-    const firebaseConfig = typeof __firebase_config !== 'undefined' 
-        ? JSON.parse(__firebase_config) 
-        : { apiKey: "DEMO_API_KEY", authDomain: "DEMO_AUTH_DOMAIN", projectId: "DEMO_PROJECT_ID" };
-
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-
-    const signinForm = document.getElementById('signin-form');
-    const errorMessageDiv = document.getElementById('error-message');
-
-    signinForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-        
-        const email = document.getElementById('email').value;
-        const password = document.getElementById('password').value;
-        errorMessageDiv.style.display = 'none';
-
-        signInWithEmailAndPassword(auth, email, password)
-            .then((userCredential) => {
-                // After successful Firebase sign-in, get the token
-                return userCredential.user.getIdToken();
-            })
-            .then(token => {
-                // Send the token to the server for session creation
-                return fetch('server-login.php', {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': 'Bearer ' + token
-                    }
-                });
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.status === 'success') {
-                    window.location.href = 'index.php'; // Redirect on successful server login
-                } else {
-                    throw new Error(data.error || 'Server login failed');
-                }
-            })
-            .catch((error) => {
-                errorMessageDiv.textContent = 'Email atau password salah. Silakan coba lagi.';
-                errorMessageDiv.style.display = 'block';
-                console.error("Sign in error:", error);
-            });
-    });
+<script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const error = urlParams.get('error');
+    if (error) {
+        const errorMessageDiv = document.getElementById('error-message');
+        errorMessageDiv.textContent = decodeURIComponent(error);
+        errorMessageDiv.style.display = 'block';
+    }
 </script>
 
 </body>
