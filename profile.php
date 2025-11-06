@@ -1,7 +1,7 @@
 <?php
 // Mulai sesi dan sertakan file koneksi
 session_start();
-include 'db_connect.php';
+include './db_connect.php';
 
 // Pastikan pengguna sudah login, jika tidak, arahkan ke halaman sign-in
 if (!isset($_SESSION['user_id'])) {
@@ -19,7 +19,7 @@ $result = $stmt->get_result();
 $user = $result->fetch_assoc();
 
 // Sertakan header setelah logika pengambilan data
-include 'header.php';
+include './header.php';
 ?>
 <!DOCTYPE html>
 <html lang="id">
@@ -46,9 +46,9 @@ include 'header.php';
             <nav>
                 <ul>
                     <!-- Gunakan path absolut untuk konsistensi -->
-                    <li class="active"><a href="/profile.php">My Profile</a></li>
-                    <li><a href="/order.php">My Order</a></li>
-                    <li><a href="/customer-service.php">Customer Service</a></li>
+                    <li class="active"><a href="./profile.php">My Profile</a></li>
+                    <li><a href="./order.php">My Order</a></li>
+                    <li><a href="./customer-service.php">Customer Service</a></li>
                 </ul>
             </nav>
         </aside>
