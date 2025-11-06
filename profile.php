@@ -1,7 +1,7 @@
 <?php
 // Mulai sesi dan sertakan file koneksi
 session_start();
-include './db_connect.php';
+include 'db_connect.php';
 
 // Pastikan pengguna sudah login, jika tidak, arahkan ke halaman sign-in
 if (!isset($_SESSION['user_id'])) {
@@ -11,7 +11,7 @@ if (!isset($_SESSION['user_id'])) {
 
 $user_id = $_SESSION['user_id'];
 
-// Ambil data lengkap pengguna, termasuk field alamat baru
+// PERBAIKAN: Query SQL kini mengambil semua field alamat yang diperlukan
 $stmt = $conn->prepare("SELECT name, email, address, city, postal_code, phone FROM users WHERE id = ?");
 $stmt->bind_param("i", $user_id);
 $stmt->execute();
@@ -19,7 +19,7 @@ $result = $stmt->get_result();
 $user = $result->fetch_assoc();
 
 // Sertakan header setelah logika pengambilan data
-include './header.php';
+include 'header.php';
 ?>
 <!DOCTYPE html>
 <html lang="id">
@@ -40,15 +40,13 @@ include './header.php';
         <aside class="sidebar">
             <div class="user-info">
                 <i class="fas fa-user-circle"></i>
-                <!-- Pastikan variabel $user ada sebelum digunakan -->
                 <span><?= htmlspecialchars($user['name'] ?? 'User'); ?></span>
             </div>
             <nav>
                 <ul>
-                    <!-- Gunakan path absolut untuk konsistensi -->
-                    <li class="active"><a href="./profile.php">My Profile</a></li>
-                    <li><a href="./order.php">My Order</a></li>
-                    <li><a href="./customer-service.php">Customer Service</a></li>
+                    <li class="active"><a href="/profile.php">My Profile</a></li>
+                    <li><a href="/order.php">My Order</a></li>
+                    <li><a href="/customer-service.php">Customer Service</a></li>
                 </ul>
             </nav>
         </aside>
@@ -56,12 +54,10 @@ include './header.php';
         <section class="content">
             <h2>Profile Information</h2>
             
-            <!-- Tampilkan pesan sukses jika ada -->
             <?php if (isset($_GET['status']) && $_GET['status'] == 'success'): ?>
                 <div class="alert success">Profil berhasil diperbarui!</div>
             <?php endif; ?>
 
-            <!-- Form diubah agar sesuai dengan checkout dan menunjuk ke update-profile.php -->
             <form class="contact-form" method="POST" action="update-profile.php">
                 <div class="form-group">
                     <label for="name">Name</label>
