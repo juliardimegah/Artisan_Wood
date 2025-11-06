@@ -1,0 +1,468 @@
+body {
+    font-family: 'Inter', sans-serif;
+    background: #f9f9f9;
+    margin: 0;
+}
+header, footer {
+    background: #8B4513;
+    color: white;
+    padding: 15px 40px;
+}
+.admin-container {
+    max-width: 1000px;
+    margin: 30px auto;
+    background: white;
+    padding: 30px;
+    border-radius: 12px;
+}
+.card {
+    display: inline-block;
+    background: #F8F3ED;
+    padding: 20px;
+    margin: 10px;
+    border-radius: 10px;
+    font-weight: bold;
+}
+form input, form textarea, form button {
+    display: block;
+    margin: 10px 0;
+    padding: 8px;
+    width: 100%;
+    box-sizing: border-box;
+}
+form button {
+    background: #8B4513;
+    color: white;
+    border: none;
+    padding: 10px;
+    border-radius: 8px;
+    cursor: pointer;
+}
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+th, td {
+    border: 1px solid #ddd;
+    padding: 8px;
+}
+th {
+    background: #F8F3ED;
+}
+.error { color: red; }
+
+/* =========================================================
+   ADMIN HEADER & FOOTER STYLES
+========================================================= */
+
+.admin-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #8B4513;
+    color: #fff;
+    padding: 15px 40px;
+}
+
+.admin-header .admin-logo h1 {
+    margin: 0;
+    font-size: 20px;
+    letter-spacing: 0.5px;
+}
+
+.admin-nav ul {
+    list-style: none;
+    display: flex;
+    gap: 20px;
+    margin: 0;
+    padding: 0;
+}
+
+.admin-nav a {
+    color: #fff;
+    text-decoration: none;
+    font-weight: 500;
+    transition: opacity 0.3s ease;
+}
+
+.admin-nav a:hover {
+    opacity: 0.8;
+}
+
+.admin-user {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.admin-user .logout-btn {
+    background: #fff;
+    color: #8B4513;
+    padding: 5px 12px;
+    border-radius: 6px;
+    font-weight: bold;
+    text-decoration: none;
+    transition: background 0.3s ease;
+}
+
+.admin-user .logout-btn:hover {
+    background: #F8F3ED;
+}
+
+/* FOOTER */
+.admin-footer {
+    background: #F8F3ED;
+    text-align: center;
+    padding: 15px 0;
+    margin-top: 40px;
+    color: #555;
+    border-top: 1px solid #EAEAEA;
+    font-size: 14px;
+}
+
+/* =========================================================
+   Tables
+========================================================= */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+th, td {
+    border: 1px solid #ddd;
+    padding: 10px;
+}
+th {
+    background: #F8F3ED;
+}
+td a {
+    color: #8B4513;
+    text-decoration: none;
+}
+td a:hover {
+    text-decoration: underline;
+}
+
+/* =========================================================
+   Chat Box
+========================================================= */
+.chat-box {
+    background: #fff;
+    border: 1px solid #ddd;
+    padding: 20px;
+    margin: 20px 0;
+    max-height: 400px;
+    overflow-y: auto;
+    border-radius: 10px;
+}
+.chat-msg {
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 8px;
+}
+.chat-msg.user {
+    background: #F8F3ED;
+}
+.chat-msg.admin {
+    background: #E0CDB6;
+    text-align: right;
+}
+.reply-form textarea {
+    width: 100%;
+    height: 80px;
+    margin-bottom: 10px;
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+}
+.reply-form button {
+    background: #8B4513;
+    color: white;
+    border: none;
+    padding: 10px 25px;
+    border-radius: 8px;
+    cursor: pointer;
+}
+.reply-form button:hover {
+    background: #6e3610;
+}
+
+/* =========================================================
+   Navigation Active Highlight
+========================================================= */
+.admin-nav a.active {
+    background: #fff;
+    color: #8B4513;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-weight: bold;
+}
+.admin-nav a.active:hover {
+    opacity: 1;
+}
+
+/* =========================================================
+   Product Management Styles
+========================================================= */
+.product-form {
+    background: #fff;
+    border: 1px solid #ddd;
+    padding: 20px;
+    border-radius: 10px;
+    margin-bottom: 30px;
+}
+.product-form input,
+.product-form textarea,
+.product-form button {
+    width: 100%;
+    padding: 10px;
+    margin: 8px 0;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    font-size: 15px;
+}
+.product-form button {
+    background: #8B4513;
+    color: white;
+    border: none;
+    cursor: pointer;
+    font-weight: bold;
+}
+.product-form button:hover {
+    background: #6e3610;
+}
+.btn-edit, .btn-delete {
+    display: inline-block;
+    padding: 6px 12px;
+    border-radius: 5px;
+    text-decoration: none;
+    font-weight: 600;
+    color: white;
+    margin-right: 5px;
+}
+.btn-edit {
+    background: #007bff;
+}
+.btn-edit:hover {
+    background: #0056b3;
+}
+.btn-delete {
+    background: #d9534f;
+}
+.btn-delete:hover {
+    background: #b52b27;
+}
+
+/* =========================================================
+   Dashboard Styles
+========================================================= */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 20px;
+    margin: 30px 0;
+}
+
+.stat-card {
+    background: #F8F3ED;
+    text-align: center;
+    padding: 25px 10px;
+    border-radius: 12px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+.stat-card i {
+    font-size: 28px;
+    color: #8B4513;
+    margin-bottom: 8px;
+}
+.stat-card h2 {
+    font-size: 28px;
+    margin: 8px 0 4px 0;
+}
+.stat-card p {
+    margin: 0;
+    font-weight: 600;
+    color: #444;
+}
+
+/* Ringkasan */
+.summary-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 25px;
+}
+
+.summary-box {
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    padding: 20px;
+}
+
+.summary-box h3 {
+    margin-top: 0;
+    margin-bottom: 15px;
+    color: #8B4513;
+}
+
+.summary-box table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.summary-box th, .summary-box td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: center;
+}
+
+.status {
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-weight: 600;
+    color: white;
+}
+.status.belum\ dibayar { background: #d9534f; }
+.status.sedang\ dikemas { background: #f0ad4e; }
+.status.dikirim { background: #0275d8; }
+.status.selesai { background: #5cb85c; }
+.status.dibatalkan { background: #777; }
+
+/* =========================================================
+   GLOBAL STYLES - Artisan Wood Admin CMS
+========================================================= */
+body {
+    font-family: 'Inter', sans-serif;
+    background: #F8F3ED;
+    color: #333;
+    margin: 0;
+    padding: 0;
+}
+
+/* Header & Footer (dipakai di semua halaman admin) */
+header.admin-header,
+footer.admin-footer {
+    font-family: 'Inter', sans-serif;
+}
+
+.admin-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #8B4513;
+    color: #fff;
+    padding: 15px 40px;
+}
+
+.admin-header h1 {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 600;
+}
+
+.admin-footer {
+    background: #F8F3ED;
+    text-align: center;
+    padding: 15px 0;
+    color: #555;
+    border-top: 1px solid #EAEAEA;
+    font-size: 14px;
+    margin-top: 40px;
+}
+
+/* =========================================================
+   LOGIN PAGE STYLES
+========================================================= */
+
+.login-container {
+    width: 100%;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(180deg, #F8F3ED 0%, #EADCC8 100%);
+    animation: fadeIn 0.6s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.login-box {
+    background: #fff;
+    padding: 40px 50px;
+    border-radius: 15px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+    width: 360px;
+    text-align: center;
+}
+
+.login-box h2 {
+    margin-bottom: 25px;
+    color: #8B4513;
+    font-family: 'Playfair Display', serif;
+    font-weight: 700;
+}
+
+.login-box form {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+}
+
+.login-box input[type="text"],
+.login-box input[type="password"] {
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    padding: 12px 15px;
+    margin-bottom: 15px;
+    font-size: 15px;
+    transition: all 0.2s ease;
+}
+
+.login-box input:focus {
+    outline: none;
+    border-color: #8B4513;
+    box-shadow: 0 0 5px rgba(139, 69, 19, 0.3);
+}
+
+.login-box button {
+    background: #8B4513;
+    color: white;
+    border: none;
+    padding: 12px 0;
+    border-radius: 10px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+.login-box button:hover {
+    background: #6e3610;
+}
+
+.login-box .error {
+    color: #d9534f;
+    background: #f9e2e2;
+    border: 1px solid #d9534f;
+    border-radius: 8px;
+    padding: 8px;
+    margin-bottom: 15px;
+    font-size: 14px;
+}
+
+/* Small text */
+.login-box p {
+    font-size: 13px;
+    color: #777;
+    margin-top: 20px;
+}
+
+/* Optional logo or icon */
+.login-logo {
+    font-size: 40px;
+    color: #8B4513;
+    margin-bottom: 10px;
+}
