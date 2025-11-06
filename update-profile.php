@@ -2,38 +2,51 @@
 session_start();
 include 'db_connect.php';
 
-if (!isset($_SESSION['user_id'])) {
-    header("Location: signin.php");
+// Pastikan pengguna sudah login dan metodenya adalah POST
+if (!isset($_SESSION['user_id']) || $_SERVER["REQUEST_METHOD"] != "POST") {
+    // Redirect ke halaman signin jika tidak memenuhi syarat
+    header("Location: /signin.php");
     exit;
 }
 
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $user_id = $_SESSION['user_id'];
-    $name = $_POST['name'] ?? '';
-    $email = $_POST['email'] ?? '';
-    $address = $_POST['address'] ?? '';
+$user_id = $_SESSION['user_id'];
 
-    if (empty($name) || empty($email)) {
-        header("Location: profile.php?error=" . urlencode("Name and email are required."));
-        exit;
-    }
+// Ambil semua data dari form
+$name = $_POST['name'] ?? '';
+$email = $_POST['email'] ?? '';
+$address = $_POST['address'] ?? '';
+$city = $_POST['city'] ?? '';
+$postal_code = $_POST['postal_code'] ?? '';
+$phone = $_POST['phone'] ?? '';
 
-    $stmt = $conn->prepare("UPDATE users SET name = ?, email = ?, address = ? WHERE id = ?");
-    $stmt->bind_param("sssi", $name, $email, $address, $user_id);
+// Validasi dasar: nama dan email tidak boleh kosong
+if (empty($name) || empty($email)) {
+    // Arahkan kembali dengan pesan error jika validasi gagal
+    header("Location: /profile.php?status=error&message=" . urlencode("Name and email are required."));
+    exit;
+}
 
-    if ($stmt->execute()) {
-        $_SESSION['name'] = $name; // Update session name
-        header("Location: profile.php?success=" . urlencode("Profile updated successfully."));
-        exit;
-    } else {
-        header("Location: profile.php?error=" . urlencode("Could not update profile. Please try again."));
-        exit;
-    }
+// Siapkan query UPDATE untuk semua field, termasuk field alamat yang baru
+$stmt = $conn->prepare(
+    "UPDATE users SET name = ?, email = ?, address = ?, city = ?, postal_code = ?, phone = ? WHERE id = ?"
+);
 
-    $stmt->close();
-    $conn->close();
+// Bind semua parameter ke query
+$stmt->bind_param("ssssssi", $name, $email, $address, $city, $postal_code, $phone, $user_id);
+
+// Eksekusi query dan berikan feedback
+if ($stmt->execute()) {
+    // Perbarui juga nama di sesi agar langsung tampil di header
+    $_SESSION['name'] = $name;
+    // Arahkan kembali ke profil dengan pesan sukses
+    header("Location: /profile.php?status=success");
+    exit;
 } else {
-    header("Location: profile.php");
+    // Arahkan kembali dengan pesan error jika query gagal
+    header("Location: /profile.php?status=error&message=" . urlencode("Failed to update profile. Please try again."));
     exit;
 }
+
+$stmt->close();
+$conn->close();
 ?>
