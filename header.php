@@ -54,19 +54,19 @@ if (session_status() === PHP_SESSION_NONE) {
                 </a>
                 <div class="dropdown-content">
                     <!-- Menggunakan path absolut untuk profile dan logout -->
-                    <a href="/profile.php">Profile</a>
-                    <a href="/logout.php">Logout</a>
+                    <a href="./profile.php">Profile</a>
+                    <a href="./logout.php">Logout</a>
                 </div>
             </div>
         <?php else : ?>
             <!-- Menggunakan path absolut untuk signin -->
-            <a href="/signin.php" class="account">
+            <a href="./signin.php" class="account">
                 <i class="fas fa-user"></i>
                 <span>Sign In<br>ACCOUNT</span>
             </a>
         <?php endif; ?>
         <!-- Menggunakan path absolut untuk cart -->
-        <a href="/cart.php" class="cart">
+        <a href="./cart.php" class="cart">
             <i class="fas fa-shopping-cart"></i>
         </a>
     </div>
