@@ -25,7 +25,7 @@ if (isset($_GET['delete'])) {
     <table>
         <tr>
             <th>ID</th>
-            <th>Username</th>
+            <th>Name</th>
             <th>Email</th>
             <th>Address</th>
             <th>Created At</th>
@@ -37,7 +37,7 @@ if (isset($_GET['delete'])) {
         ?>
         <tr>
             <td><?= $row['id'] ?></td>
-            <td><?= htmlspecialchars($row['username']) ?></td>
+            <td><?= htmlspecialchars($row['name']) ?></td>
             <td><?= htmlspecialchars($row['email']) ?></td>
             <td><?= nl2br(htmlspecialchars($row['address'])) ?></td>
             <td><?= $row['created_at'] ?></td>
