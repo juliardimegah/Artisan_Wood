@@ -1,6 +1,5 @@
 <?php
 include '../db_connect.php';
-include './header.php';
 
 // === Hitung Statistik Utama ===
 $total_products = $conn->query("SELECT COUNT(*) AS total FROM products")->fetch_assoc()['total'];
@@ -18,10 +17,17 @@ $low_stock = $conn->query("SELECT id, name, stock FROM products WHERE stock < 10
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - Artisan Wood CMS</title>
+    
+    <!-- CSS dan Font Awesome dipanggil di dalam <head> -->
     <link rel="stylesheet" href="../assets/css/admin.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 <body>
+
+<?php 
+// Header (navigasi) dimuat di awal <body>
+include './header.php'; 
+?>
 
 <main class="admin-container">
     <h1><i class="fas fa-tachometer-alt"></i> Admin Dashboard</h1>
@@ -56,26 +62,24 @@ $low_stock = $conn->query("SELECT id, name, stock FROM products WHERE stock < 10
         <div class="summary-box">
             <h3><i class="fas fa-box-open"></i> Recent Orders</h3>
             <table>
-                <tr>
-                    <th>ID</th>
-                    <th>User</th>
-                    <th>Total</th>
-                    <th>Status</th>
-                    <th>Date</th>
-                </tr>
+                <thead>
+                    <tr><th>ID</th><th>User</th><th>Total</th><th>Status</th><th>Date</th></tr>
+                </thead>
+                <tbody>
                 <?php if ($recent_orders->num_rows > 0): ?>
                     <?php while ($r = $recent_orders->fetch_assoc()): ?>
                     <tr>
                         <td><?= $r['id'] ?></td>
                         <td><?= $r['user_id'] ?></td>
                         <td>Rp<?= number_format($r['total_amount'], 0, ',', '.') ?></td>
-                        <td><span class="status <?= strtolower($r['status']) ?>"><?= $r['status'] ?></span></td>
+                        <td><span class="status <?= strtolower(str_replace(' ', '-', $r['status'])) ?>"><?= htmlspecialchars($r['status']) ?></span></td>
                         <td><?= date('d M Y', strtotime($r['order_date'])) ?></td>
                     </tr>
                     <?php endwhile; ?>
                 <?php else: ?>
                     <tr><td colspan="5"><em>No orders yet</em></td></tr>
                 <?php endif; ?>
+                </tbody>
             </table>
         </div>
 
@@ -83,11 +87,10 @@ $low_stock = $conn->query("SELECT id, name, stock FROM products WHERE stock < 10
         <div class="summary-box">
             <h3><i class="fas fa-exclamation-triangle"></i> Low Stock Products</h3>
             <table>
-                <tr>
-                    <th>ID</th>
-                    <th>Product Name</th>
-                    <th>Stock</th>
-                </tr>
+                <thead>
+                    <tr><th>ID</th><th>Product Name</th><th>Stock</th></tr>
+                </thead>
+                <tbody>
                 <?php if ($low_stock->num_rows > 0): ?>
                     <?php while ($p = $low_stock->fetch_assoc()): ?>
                     <tr>
@@ -99,6 +102,7 @@ $low_stock = $conn->query("SELECT id, name, stock FROM products WHERE stock < 10
                 <?php else: ?>
                     <tr><td colspan="3"><em>All stocks are healthy</em></td></tr>
                 <?php endif; ?>
+                </tbody>
             </table>
         </div>
     </div>
