@@ -9,12 +9,9 @@ if (!isset($_SESSION['user_id'])) {
 }
 
 $user_id = $_SESSION['user_id'];
-// Correctly get the user's name from the session
-$name = $_SESSION['name'] ?? 'User';
+$name = $_SESSION['name'] ?? 'User'; // Mengambil nama dari session
 
-// Get the current status from the query string, default to 'Semua'
 $status_filter = $_GET['status'] ?? 'Semua';
-
 ?>
 <!DOCTYPE html>
 <html lang="id">
@@ -50,95 +47,59 @@ $status_filter = $_GET['status'] ?? 'Semua';
 
         <section class="content">
             <div class="order-tabs">
-                <a href="?status=Semua" class="<?= $status_filter == 'Semua' ? 'active' : '' ?>">Semua</a>
-                <a href="?status=Belum dibayar" class="<?= $status_filter == 'Belum dibayar' ? 'active' : '' ?>">Belum dibayar</a>
-                <a href="?status=Sedang dikemas" class="<?= $status_filter == 'Sedang dikemas' ? 'active' : '' ?>">Sedang dikemas</a>
-                <a href="?status=Dikirim" class="<?= $status_filter == 'Dikirim' ? 'active' : '' ?>">Dikirim</a>
-                <a href="?status=Selesai" class="<?= $status_filter == 'Selesai' ? 'active' : '' ?>">Selesai</a>
-                <a href="?status=Dibatalkan" class="<?= $status_filter == 'Dibatalkan' ? 'active' : '' ?>">Dibatalkan</a>
+                <a href="#" data-status="Semua" class="tab-link active">Semua</a>
+                <a href="#" data-status="Belum dibayar" class="tab-link">Belum dibayar</a>
+                <a href="#" data-status="Sedang dikemas" class="tab-link">Sedang dikemas</a>
+                <a href="#" data-status="Dikirim" class="tab-link">Dikirim</a>
+                <a href="#" data-status="Selesai" class="tab-link">Selesai</a>
+                <a href="#" data-status="Dibatalkan" class="tab-link">Dibatalkan</a>
             </div>
 
             <div class="order-list">
-                <?php
-                // Base query
-                $sql = "
-                    SELECT 
-                        o.id AS order_id, o.order_date, o.status, o.total_amount,
-                        p.name AS product_name, p.image AS product_image, 
-                        oi.quantity, oi.price
-                    FROM orders AS o
-                    JOIN order_items AS oi ON o.id = oi.order_id
-                    JOIN products AS p ON oi.product_id = p.id
-                    WHERE o.user_id = ?";
-
-                // Add status filter if not 'Semua'
-                if ($status_filter != 'Semua') {
-                    $sql .= " AND o.status = ?";
-                }
-                
-                $sql .= " ORDER BY o.order_date DESC";
-
-                $stmt = $conn->prepare($sql);
-
-                // Bind parameters
-                if ($status_filter != 'Semua') {
-                    $stmt->bind_param("is", $user_id, $status_filter);
-                } else {
-                    $stmt->bind_param("i", $user_id);
-                }
-
-                $stmt->execute();
-                $result = $stmt->get_result();
-
-                if ($result->num_rows > 0) {
-                    // Group items by order ID
-                    $orders = [];
-                    while ($row = $result->fetch_assoc()) {
-                        $orders[$row['order_id']]['details'] = [
-                            'order_date' => $row['order_date'],
-                            'status' => $row['status'],
-                            'total_amount' => $row['total_amount']
-                        ];
-                        $orders[$row['order_id']]['items'][] = [
-                            'product_name' => $row['product_name'],
-                            'product_image' => $row['product_image'],
-                            'quantity' => $row['quantity'],
-                            'price' => $row['price']
-                        ];
-                    }
-
-                    foreach ($orders as $order_id => $order) {
-                        echo '<div class="order-group">';
-                        echo '<h4>Order ID: ' . $order_id . ' | Status: ' . htmlspecialchars($order['details']['status']) . '</h4>';
-                        foreach ($order['items'] as $item) {
-                            echo '
-                            <div class="order-item">
-                                <div class="item-main-info">
-                                    <span class="item-qty">'. $item['quantity'] .'x</span>
-                                    <img src="'. htmlspecialchars($item['product_image']) .'" alt="Product">
-                                    <div class="item-details">
-                                        <p><strong>'. htmlspecialchars($item['product_name']) .'</strong></p>
-                                    </div>
-                                </div>
-                                <div class="item-price">
-                                    Rp'. number_format($item['price'] * $item['quantity'], 0, ',', '.') .'
-                                </div>
-                            </div>';
-                        }
-                        echo '<div class="order-total"><strong>Total: Rp'. number_format($order['details']['total_amount'], 0, ',', '.') .'</strong></div>';
-                        echo '</div>';
-                    }
-                } else {
-                    echo '<p class="no-orders">Belum ada pesanan dengan status ini.</p>';
-                }
-                $stmt->close();
-                ?>
+                <!-- Order items will be loaded here dynamically -->
             </div>
         </section>
     </div>
 </main>
 
 <?php include 'footer.php'; ?>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const tabs = document.querySelectorAll('.tab-link');
+        const orderList = document.querySelector('.order-list');
+
+        function fetchOrders(status) {
+            // Show a loading message
+            orderList.innerHTML = '<p>Loading orders...</p>';
+
+            fetch(`get_orders.php?status=${status}`)
+                .then(response => response.text())
+                .then(data => {
+                    orderList.innerHTML = data;
+                })
+                .catch(error => {
+                    console.error('Error fetching orders:', error);
+                    orderList.innerHTML = '<p class="no-orders">Gagal memuat pesanan. Silakan coba lagi.</p>';
+                });
+        }
+
+        tabs.forEach(tab => {
+            tab.addEventListener('click', function(e) {
+                e.preventDefault();
+
+                tabs.forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+
+                const status = this.getAttribute('data-status');
+                fetchOrders(status);
+            });
+        });
+
+        // Load initial orders (default: Semua)
+        fetchOrders('Semua');
+    });
+</script>
 
 </body>
 </html>

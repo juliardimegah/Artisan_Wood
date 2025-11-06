@@ -1,8 +1,12 @@
 <?php 
-session_start(); 
+// Memulai sesi hanya jika belum ada sesi yang aktif
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 ?>
 <head> 
-    <link rel="stylesheet" href="./assets/css/style.css">
+    <!-- Menggunakan path absolut untuk CSS -->
+    <link rel="stylesheet" href="/assets/css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
     <style>
         .account {
@@ -33,7 +37,8 @@ session_start();
     </style>
 </head>
 <header class="main-header">
-    <div class="logo" onclick="window.location.href='index.php'">ARTISAN WOOD</div>
+    <!-- Menggunakan path absolut untuk navigasi logo -->
+    <div class="logo" onclick="window.location.href='/index.php'">ARTISAN WOOD</div>
     <div class="search-bar">
         <i class="fas fa-search"></i>
         <input type="text" placeholder="Search what you need">
@@ -48,17 +53,20 @@ session_start();
                     <span>Hello, <?= $firstName; ?></span>
                 </a>
                 <div class="dropdown-content">
-                    <a href="profile.php">Profile</a>
-                    <a href="logout.php">Logout</a>
+                    <!-- Menggunakan path absolut untuk profile dan logout -->
+                    <a href="/profile.php">Profile</a>
+                    <a href="/logout.php">Logout</a>
                 </div>
             </div>
         <?php else : ?>
-            <a href="signin.php" class="account">
+            <!-- Menggunakan path absolut untuk signin -->
+            <a href="/signin.php" class="account">
                 <i class="fas fa-user"></i>
                 <span>Sign In<br>ACCOUNT</span>
             </a>
         <?php endif; ?>
-        <a href="cart.php" class="cart">
+        <!-- Menggunakan path absolut untuk cart -->
+        <a href="/cart.php" class="cart">
             <i class="fas fa-shopping-cart"></i>
         </a>
     </div>
