@@ -12,28 +12,24 @@ if (session_status() === PHP_SESSION_NONE) {
         .account {
             position: relative;
         }
-        .account .dropdown-content {
-            display: none;
-            position: absolute;
-            background-color: #f9f9f9;
-            min-width: 120px;
-            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
-            z-index: 1;
-            right: 0; 
-        }
-        .account:hover .dropdown-content {
-            display: block;
-        }
-        .dropdown-content a {
-            color: black;
-            padding: 10px 15px;
+
+        /* Gaya yang disederhanakan untuk tombol profil */
+        .user-actions .account > a {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 15px;
+            border-radius: 25px; /* Bentuk pil */
             text-decoration: none;
-            display: block;
-            text-align: left;
+            color: #333;
+            background-color: #f0f0f0;
+            border: 1px solid #ddd;
+            font-weight: 500;
+            font-size: 14px;
         }
-        .dropdown-content a:hover {
-            background-color: #f1f1f1;
-        }
+
+        /* Efek hover dan semua gaya dropdown telah dihapus */
+
     </style>
 </head>
 <header class="main-header">
@@ -48,18 +44,15 @@ if (session_status() === PHP_SESSION_NONE) {
             $firstName = explode(' ', htmlspecialchars($_SESSION['name']))[0];
         ?>
             <div class="account">
-                <a href="#">
+                <!-- Link ini sekarang menjadi tautan langsung ke halaman profil -->
+                <a href="./profile.php">
                     <i class="fas fa-user"></i>
                     <span>Hello, <?= $firstName; ?></span>
                 </a>
-                <div class="dropdown-content">
-                    <!-- Menggunakan path absolut untuk profile dan logout -->
-                    <a href="./profile.php">Profile</a>
-                    <a href="./logout.php">Logout</a>
-                </div>
+                <!-- Dropdown telah dihapus sepenuhnya -->
             </div>
         <?php else : ?>
-            <!-- Menggunakan path absolut untuk signin -->
+            <!-- Gaya tombol Sign In tidak berubah -->
             <a href="./signin.php" class="account">
                 <i class="fas fa-user"></i>
                 <span>Sign In<br>ACCOUNT</span>
