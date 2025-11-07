@@ -9,7 +9,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $password = $_POST['password'];
 
     // Ambil data admin dari database
-    $stmt = $conn->prepare("SELECT id, password FROM admin WHERE name = ?");
+    $stmt = $conn->prepare("SELECT id, password FROM admin WHERE username = ?");
     $stmt->bind_param("s", $username);
     $stmt->execute();
     $result = $stmt->get_result();
