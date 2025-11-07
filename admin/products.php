@@ -147,7 +147,11 @@ $form_button_text = $edit_product ? 'Update Product' : 'Add Product';
 
 function sort_url($column, $current_column, $current_order) {
     $order = ($current_column == $column && $current_order == 'asc') ? 'desc' : 'asc';
-    return "?sort=$column&order=$order" . ($_GET['search'] ? '&search=' . urlencode($_GET['search']) : '');
+    $search_query = '';
+    if (isset($_GET['search']) && !empty($_GET['search'])) {
+        $search_query = '&search=' . urlencode($_GET['search']);
+    }
+    return "?sort=$column&order=$order" . $search_query;
 }
 
 ?>
