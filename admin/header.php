@@ -2,12 +2,15 @@
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
-if (!isset($_SESSION['admin'])) {
-    header("Location: login.php");
+
+// Periksa apakah admin sudah login
+if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== true) {
+    // Jika belum, alihkan ke halaman login yang benar
+    header("Location: login-admin.php");
     exit;
 }
 
-// Dapatkan nama file saat ini (misal: orders.php)
+// Dapatkan nama file saat ini untuk menandai menu aktif
 $current_page = basename($_SERVER['PHP_SELF']);
 ?>
 <header class="admin-header">
@@ -27,7 +30,7 @@ $current_page = basename($_SERVER['PHP_SELF']);
     </nav>
 
     <div class="admin-user">
-        <span><i class="fas fa-user-shield"></i> <?= htmlspecialchars($_SESSION['admin']); ?></span>
+        <span><i class="fas fa-user-shield"></i> <?= htmlspecialchars($_SESSION['admin_username']); ?></span>
         <a href="logout.php" class="logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</a>
     </div>
 </header>
